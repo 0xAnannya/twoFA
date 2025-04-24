@@ -1,0 +1,79 @@
+<script lang="ts">
+	let {
+		error = $bindable<boolean>(false),
+		isSuccess = $bindable<boolean>(false),
+		buttonMsg = $bindable()
+	} = $props();
+</script>
+
+{#if !error && isSuccess}
+	<!-- Unlocked Icon -->
+	<svg
+		fill="#1AAF82"
+		height="118px"
+		width="118px"
+		version="1.1"
+		id="Capa_1"
+		xmlns="http://www.w3.org/2000/svg"
+		xmlns:xlink="http://www.w3.org/1999/xlink"
+		viewBox="-195.2 -195.2 710.40 710.40"
+		xml:space="preserve"
+		stroke="#1AAF82"
+		stroke-width="0.0032"
+		><g id="SVGRepo_bgCarrier" stroke-width="0"
+			><rect x="-195.2" y="-195.2" width="710.40" height="710.40" rx="355.2" fill="#E8FEF3"
+			></rect></g
+		><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g
+			id="SVGRepo_iconCarrier"
+		>
+			<g>
+				<path
+					d="M160,103.695c-18.802,0-36.461,5.146-51.731,14.14V64.523c0-24.551,18.025-44.523,40.183-44.523h23.098 c22.157,0,40.183,19.973,40.183,44.523c0,5.522,4.478,10,10,10s10-4.478,10-10C231.731,28.945,204.733,0,171.549,0h-23.098 c-33.185,0-60.183,28.945-60.183,64.523v68.591c-20.308,19.738-33.011,47.731-33.011,78.733C55.258,271.483,102.245,320,160,320 s104.742-48.517,104.742-108.152S217.755,103.695,160,103.695z M160,300c-46.727,0-84.742-39.545-84.742-88.152 s38.016-88.152,84.742-88.152s84.742,39.545,84.742,88.152S206.727,300,160,300z"
+				></path>
+				<path
+					d="M189.504,195.563c0-16.273-13.235-29.513-29.505-29.513c-16.268,0-29.503,13.239-29.503,29.513 c0,8.318,3.452,16.06,9.343,21.557l-7.075,31.729c-0.159,0.715-0.239,1.444-0.239,2.177c0,8.667,8.488,15.202,19.744,15.202h15.467 c11.254,0,19.74-6.535,19.74-15.202c0-0.732-0.08-1.462-0.24-2.177l-7.076-31.729C186.051,211.622,189.504,203.881,189.504,195.563 z M153.84,246.227l6.159-27.622l6.161,27.622H153.84z M164.36,204.014c-1.944,1.01-3.443,2.591-4.361,4.455 c-0.918-1.864-2.417-3.445-4.361-4.455c-3.171-1.647-5.142-4.886-5.142-8.451c0-5.245,4.263-9.513,9.503-9.513 c5.241,0,9.505,4.268,9.505,9.513C169.504,199.127,167.533,202.365,164.36,204.014z"
+				></path>
+			</g>
+		</g></svg
+	>
+{:else if error && !isSuccess}
+	<!-- Locked Icon (Red) -->
+	<svg
+		fill="#FD4B63"
+		width="118px"
+		height="118px"
+		viewBox="-11.04 -11.04 46.08 46.08"
+		xmlns="http://www.w3.org/2000/svg"
+		stroke="#FD4B63"
+		stroke-width="0.00024000000000000003"
+		><g id="SVGRepo_bgCarrier" stroke-width="0"
+			><rect x="-11.04" y="-11.04" width="46.08" height="46.08" rx="23.04" fill="#FFEEF0 "
+			></rect></g
+		><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g
+			id="SVGRepo_iconCarrier"
+			><path
+				d="M12,1A5.006,5.006,0,0,0,7,6V8.765a8,8,0,1,0,10,0V6A5.006,5.006,0,0,0,12,1ZM9,6a3,3,0,0,1,6,0V7.589a7.935,7.935,0,0,0-6,0Zm9,9a6,6,0,1,1-6-6A6.006,6.006,0,0,1,18,15Zm-4-1a1.994,1.994,0,0,1-1,1.723V18a1,1,0,0,1-2,0V15.723A2,2,0,1,1,14,14Z"
+			></path></g
+		></svg
+	>
+{:else}
+	<!-- Locked Icon (Default) -->
+
+	<svg
+		fill="#87Ceeb"
+		width="118px"
+		height="118px"
+		viewBox="-11.52 -11.52 47.04 47.04"
+		xmlns="http://www.w3.org/2000/svg"
+		stroke="#87Ceeb"
+		stroke-width="0.00024000000000000003"
+		><g id="SVGRepo_bgCarrier" stroke-width="0"
+			><rect x="-11.52" y="-11.52" width="47.04" height="47.04" rx="23.52" fill="#EAF4FB"></rect></g
+		><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g
+			id="SVGRepo_iconCarrier"
+			><path
+				d="M12,1A5.006,5.006,0,0,0,7,6V8.765a8,8,0,1,0,10,0V6A5.006,5.006,0,0,0,12,1ZM9,6a3,3,0,0,1,6,0V7.589a7.935,7.935,0,0,0-6,0Zm9,9a6,6,0,1,1-6-6A6.006,6.006,0,0,1,18,15Zm-4-1a1.994,1.994,0,0,1-1,1.723V18a1,1,0,0,1-2,0V15.723A2,2,0,1,1,14,14Z"
+			></path></g
+		></svg
+	>
+{/if}
