@@ -1,7 +1,9 @@
 <script lang="ts">
 	import OtPbtn from '../components/OTPbtn.svelte';
-	import LockSvg from '../components/LockSvg.svelte';
 	import { correctCode, VALID_KEYWORDS } from '../utils/constants';
+    import defaultLock from"../icons/defaultLock.svg"
+    import errorLock from "../icons/errorLock.svg"
+    import successLock from "../icons/successLock.svg"
 
 	const inputs = $state<string[]>(['', '', '', '', '', '']);
 	let error = $state<boolean>(false);
@@ -12,9 +14,6 @@
 
 
 	let focusedIdx= $state< number | null > (null);
-	function isFocused(idx: number) {
-		return focusedIdx === idx;
-	}
 
 	const inputRefs: Array<HTMLInputElement | null> = Array(6).fill(null);
 
@@ -37,73 +36,104 @@
 		}
 	}
 
-	function handleKeydown(e: KeyboardEvent, idx: number) {
-		if (e.key === 'Backspace' && !inputs[idx] && idx > 0) {
-			inputRefs[idx - 1]?.focus();
-		} else if (e.key === 'ArrowLeft' && idx > 0) {
-			inputRefs[idx - 1]?.focus();
-		} else if (e.key === 'ArrowRight' && idx < inputRefs.length - 1) {
-			inputRefs[idx + 1]?.focus();
-		} else if (e.key === 'Enter') {
-			submitCode();
-		} else if (e.key.toLowerCase() === 'a' && e.ctrlKey) {
-			(e.currentTarget as HTMLInputElement).select();
+
+function handleKeydown(e: KeyboardEvent, idx: number) {
+	// Expand selection to the left
+	if (e.shiftKey && e.key === 'ArrowLeft') {
+		e.preventDefault();
+		if (selStart === null) {
+			selStart = idx;
+			selEnd = idx;
 		}
+		if (selEnd !== null) {
+			selEnd = Math.max(0, selEnd - 1);
+			inputRefs[selEnd]?.focus();
+		}
+		return;
 	}
 
-	// function handleKeydown(e: KeyboardEvent, idx: number) {
-	//     // Shift+Left: expand selection start->left
-	//     if (e.shiftKey && e.key === 'ArrowLeft') {
-	//       e.preventDefault();
-	//       if (selStart == null) selStart = idx;
-	//       selEnd = Math.max(0, idx - 1);
-	//       return;
-	//     }
-	//     // Shift+Right: expand selection start->right
-	//     if (e.shiftKey && e.key === 'ArrowRight') {
-	//       e.preventDefault();
-	//       if (selStart == null) selStart = idx;
-	//       selEnd = Math.min(5, idx + 1);
-	//       return;
-	//     }
-	//     // Ctrl+X: cut selected range
-	//     if (e.ctrlKey && e.key.toLowerCase() === 'x' && selStart != null && selEnd != null) {
-	//       e.preventDefault();
-	//       const start = Math.min(selStart, selEnd);
-	//       const end = Math.max(selStart, selEnd);
-	//       for (let i = start; i <= end; i++) inputs[i] = '';
-	//       inputRefs[start]?.focus();
-	//       inputRefs[start]?.setSelectionRange(0, 0);
-	//       selStart = null;
-	//       selEnd = null;
-	//       return;
-	//     }
-	//     // Enter to submit
-	//     if (e.key === 'Enter') { submitCode(); return; }
-	//     // Arrow navigation without shift
-	//     if (!e.shiftKey && e.key === 'ArrowLeft' && idx > 0) {
-	//       inputRefs[idx - 1]?.focus();
-	//       inputRefs[idx - 1]?.setSelectionRange(0, 0);
-	//       selStart = null;
-	//       selEnd = null;
-	//       return;
-	//     }
-	//     if (!e.shiftKey && e.key === 'ArrowRight' && idx < 5) {
-	//       inputRefs[idx + 1]?.focus();
-	//       inputRefs[idx + 1]?.setSelectionRange(0, 0);
-	//       selStart = null;
-	//       selEnd = null;
-	//       return;
-	//     }
-	//     // Backspace navigation
-	//     if (e.key === 'Backspace' && !inputs[idx] && idx > 0) {
-	//       inputRefs[idx - 1]?.focus();
-	//       inputRefs[idx - 1]?.setSelectionRange(0, 0);
-	//       selStart = null;
-	//       selEnd = null;
-	//       return;
-	//     }
-	//   }
+	// Expand selection to the right
+	if (e.shiftKey && e.key === 'ArrowRight') {
+		e.preventDefault();
+		if (selStart === null) {
+			selStart = idx;
+			selEnd = idx;
+		}
+		if (selEnd !== null) {
+			selEnd = Math.min(5, selEnd + 1);
+			inputRefs[selEnd]?.focus();
+		}
+		return;
+	}
+
+	// Cut selected range with Ctrl+X
+	if (e.ctrlKey && e.key.toLowerCase() === 'x' && selStart !== null && selEnd !== null) {
+		e.preventDefault();
+		const start = Math.min(selStart, selEnd);
+		const end = Math.max(selStart, selEnd);
+		for (let i = start; i <= end; i++) {
+			inputs[i] = '';
+		}
+		inputRefs[start]?.focus();
+		selStart = null;
+		selEnd = null;
+		return;
+	}
+
+	// Backspace behavior (with or without selection)
+if (e.key === 'Backspace') {
+	if (selStart !== null && selEnd !== null) {
+		e.preventDefault();
+		const start = Math.min(selStart, selEnd);
+		const end = Math.max(selStart, selEnd);
+
+		// Clear selected inputs
+		for (let i = start; i <= end; i++) {
+			inputs[i] = '';
+		}
+
+		// Reset selection + refocus
+  
+		selStart = null;
+		selEnd = null;
+		focusedIdx = start;
+		inputRefs[start]?.focus();
+		inputRefs[start]?.setSelectionRange?.(0, 0);
+
+		return;
+	} else {
+		// Normal backspace behavior
+		if (inputs[idx]) {
+			inputs[idx] = '';
+		} else if (idx > 0) {
+			inputRefs[idx - 1]?.focus();
+			inputs[idx - 1] = '';
+			focusedIdx = idx - 1;
+		}
+	}
+	return; // Prevent further nav after backspace
+}
+
+
+	// Clear selection on normal nav
+	if (!e.shiftKey && ['ArrowLeft', 'ArrowRight'].includes(e.key)) {
+		selStart = null;
+		selEnd = null;
+	}
+
+	if (e.key === 'ArrowLeft' && idx > 0) {
+		inputRefs[idx - 1]?.focus();
+	} else if (e.key === 'ArrowRight' && idx < inputRefs.length - 1) {
+		inputRefs[idx + 1]?.focus();
+	} else if (e.key === 'Enter') {
+		submitCode();
+	} else if (e.key.toLowerCase() === 'a' && e.ctrlKey) {
+		(e.currentTarget as HTMLInputElement).select();
+	}
+}
+
+
+
 
 	function submitCode() {
 		const code = inputs.join('');
@@ -115,29 +145,37 @@
 		}
 	}
 
-	function handlePaste(e: ClipboardEvent) {
-        e.preventDefault()
-		const paste = (e.clipboardData?.getData('text') || '').replace(/\D/g, '').slice(0, 6);
 
-		console.log(paste);
-		const chars = paste
-			.padEnd(6, ' ')
-			.split('')
-			.map((ch) => (ch === ' ' ? '' : ch));
-		for (let i = 0; i < paste.length; i++) {
-			inputs[i] = chars[i];
-		}
 
-		 inputRefs[Math.min(paste.length , 5)]?.focus();
-
-		if (inputs.every((ch) => ch !== '')) {
-			submitCode();
-		}
+    function handlePaste(e: ClipboardEvent) {
+       
+	e.preventDefault();
+	const paste = (e.clipboardData?.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+	const chars = paste.padEnd(6, ' ').split('').map((ch) => (ch === ' ' ? '' : ch));
+ console.log(paste)
+	for (let i = 0; i < 6; i++) {
+		inputs[i] = chars[i];
 	}
+
+	// Move focus to the first empty box
+	const firstEmpty = chars.findIndex((ch) => ch === '');
+	inputRefs[firstEmpty === -1 ? 5 : firstEmpty]?.focus();
+
+	if (chars.every((ch) => ch !== '')) {
+		submitCode();
+	}
+}
 
 	$effect(() => {
 		inputRefs[0]?.focus();
 	});
+
+    $effect(() => {
+	if (inputs.some((ch) => ch === '')) {
+		error = false;
+		isSuccess = false;
+	}
+});
 
 	function register(node: HTMLInputElement, idx: number) {
 		inputRefs[idx] = node;
@@ -166,7 +204,14 @@
 		<div
 			class="flex h-20 w-20 items-center justify-center rounded-full transition-all duration-500"
 		>
-		<LockSvg bind:error bind:isSuccess/>
+        {console.log(error,isSuccess)}
+        {#if isSuccess}
+        <img src={successLock} alt="Lock Status"/>
+        {:else if error }
+            <img src={errorLock} alt="Lock Status"/>
+        {:else}
+            <img src={defaultLock} alt="Lock Status"/> 
+        {/if}
 		</div>
 
 		<h2 class="text-3xl font-medium text-gray-800">Easy peasy</h2>
@@ -185,36 +230,39 @@
                                 class:border-blue-400={focusedIdx === idx || input !==''}
                                 class:border-red-400={error}
                                 class:border-[#63acf8]={!error && isSuccess}
+
                                 
 						></div>
-                        {console.log(input, idx)}
 						<!-- Actual Input (invisible, but interactive) -->
 						<input
                        
 							use:register={idx}
 							maxlength="1"
 							class="absolute top-0 left-0 h-full w-full bg-transparent text-center text-2xl  font-light text-transparent caret-blue-400 outline-none"
+                            class:caret-red-400={error}
                         onfocus={() => focusedIdx = idx}
 	onblur={() => focusedIdx = null}
-                    
+                    value={input}
 							oninput={(e: Event) => handleInput(e, idx)}
 							onkeydown={(e: KeyboardEvent) => handleKeydown(e, idx)}
 							onkeypress={(e: KeyboardEvent) => {
 								if (!VALID_KEYWORDS.has(e.key)) e.preventDefault();
 							}}
-                            
-							
+                        	
 						/>
+
+                        
 
 						<!-- Animated Digit Drop -->
 						{#if input !== ''}
 							<span
-								class="drop-digit absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-light text-blue-400"
-                                class:error={error}
-                                
-							>
-								{input}
-							</span>
+	class="drop-digit absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-light text-blue-400"
+    class:selected={selStart !== null && selEnd !== null && idx >= Math.min(selStart, selEnd) && idx <= Math.max(selStart, selEnd)}
+
+	class:error={error}
+>
+	{input}
+</span>
 						{/if}
 					</div>
 				{/each}
@@ -250,7 +298,11 @@
 		border-color: #f87171;
 	}
 
-
+.selected {
+	background-color: rgba(99, 172, 248, 0.2);
+	border-radius: 4px;
+	padding: 2px 4px;
+}
 
 	@keyframes slideUp {
 		from {

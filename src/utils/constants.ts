@@ -13,5 +13,6 @@ export const VALID_KEYWORDS = new Set([
 		'Backspace',
 		'ArrowLeft',
 		'ArrowRight',
-		'Shift'
+		'Shift',
+        'Ctrl'
 	]);
