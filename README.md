@@ -1,3 +1,7 @@
+# DEMO
+
+https://github.com/user-attachments/assets/bc8a6d65-2ce7-4707-b8cb-7bea733b363c
+
 # sv
 
 Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
