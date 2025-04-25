@@ -14,5 +14,6 @@ export const VALID_KEYWORDS = new Set([
 		'ArrowLeft',
 		'ArrowRight',
 		'Shift',
-        'Ctrl'
+        'Ctrl',
+		'Meta',  
 	]);

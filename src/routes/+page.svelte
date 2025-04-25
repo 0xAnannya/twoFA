@@ -5,7 +5,7 @@
 	import errorLock from '../icons/errorLock.svg';
 	import successLock from '../icons/successLock.svg';
 
-	const inputs = $state<string[]>(['', '', '', '', '', '']);
+	const inputs = $state<string[]>(Array(6).fill(''));
 	let error = $state<boolean>(false);
 	let isSuccess = $state<boolean>(false);
 	let buttonMsg = $state(`${6} digits left`);
@@ -35,6 +35,7 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent, idx: number) {
+		
 		// Expand selection to the left
 		if (e.shiftKey && e.key === 'ArrowLeft') {
 			e.preventDefault();
@@ -64,10 +65,11 @@
 		}
 
 		// Cut selected range with Ctrl+X
-		if (e.ctrlKey && e.key.toLowerCase() === 'x' && selStart !== null && selEnd !== null) {
+		if ((e.ctrlKey || e.metaKey )&& e.key.toLowerCase() === 'x' && selStart !== null && selEnd !== null) {
 			e.preventDefault();
-			const start = Math.min(selStart, selEnd);
-			const end = Math.max(selStart, selEnd);
+		const [start, end] = [Math.min(selStart, selEnd), Math.max(selStart, selEnd)];
+
+
 			for (let i = start; i <= end; i++) {
 				inputs[i] = '';
 			}
@@ -76,6 +78,19 @@
 			selEnd = null;
 			return;
 		}
+
+		// Ctrl+A / Cmd+A to select all filled inputs
+		if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+		e.preventDefault();
+		const filledIndices = inputs.map((val, i) => val !== '' ? i : -1).filter(i => i !== -1);
+		if (filledIndices.length) {
+			selStart = filledIndices[0];
+			selEnd = filledIndices[filledIndices.length - 1];
+			inputRefs[selEnd]?.focus();
+		}
+		return;
+	}
+
 
 		// Backspace behavior (with or without selection)
 		if (e.key === 'Backspace') {
@@ -89,8 +104,7 @@
 					inputs[i] = '';
 				}
 
-				// Reset selection + refocus
-
+				// Reset selection + refocus + selection
 				selStart = null;
 				selEnd = null;
 				focusedIdx = start;
@@ -108,7 +122,7 @@
 					focusedIdx = idx - 1;
 				}
 			}
-			return; // Prevent further nav after backspace
+			return;
 		}
 
 		// Clear selection on normal nav
@@ -159,6 +173,15 @@
 		}
 	}
 
+	function register(node: HTMLInputElement, idx: number) {
+		inputRefs[idx] = node;
+		return {
+			destroy() {
+				inputRefs[idx] = null;
+			}
+		};
+	}
+
 	$effect(() => {
 		inputRefs[0]?.focus();
 	});
@@ -170,34 +193,21 @@
 		}
 	});
 
-	function register(node: HTMLInputElement, idx: number) {
-		inputRefs[idx] = node;
-		return {
-			destroy() {
-				inputRefs[idx] = null;
-			}
-		};
-	}
-
 	$effect(() => {
-		if (error) {
-			buttonMsg = 'Wrong code!';
-		} else if (!error && isSuccess) {
-			buttonMsg = `Let’s Go!`;
-		} else {
-			buttonMsg = `${6 - inputs.filter(Boolean).length} digits left`;
-		}
+		buttonMsg = error
+			? 'Wrong code!'
+			: isSuccess
+				? 'Let’s Go!'
+				: `${6 - inputs.filter(Boolean).length} digits left`;
 	});
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-blue-50">
 	<div
-		class="flex w-full max-w-md flex-col items-center space-y-6 rounded-3xl bg-white px-10 py-8 shadow-md"
-	>
+		class="flex w-full max-w-md flex-col items-center space-y-6 rounded-3xl bg-white px-10 py-8 shadow-md">
 		<div
 			class="flex h-20 w-20 items-center justify-center rounded-full transition-all duration-500"
 		>
-			{console.log(error, isSuccess)}
 			{#if isSuccess}
 				<img src={successLock} alt="Lock Status" />
 			{:else if error}
@@ -223,6 +233,7 @@
 							class:border-red-400={error}
 							class:border-[#63acf8]={!error && isSuccess}
 						></div>
+
 						<!-- Actual Input (invisible, but interactive) -->
 						<input
 							use:register={idx}
@@ -240,11 +251,10 @@
 						/>
 
 						<!-- Horizontal Custom Cursor -->
-						{#if  ((focusedIdx === idx) && ( !isSuccess && !error)) }
+						{#if focusedIdx === idx && !isSuccess }
 							<span
 								class="animate-slide-in absolute bottom-0 left-1/2 h-0.5 w-[70%] -translate-y-1/2 rounded-sm bg-blue-400"
 								class:bg-red-400={error}
-								
 							></span>
 						{/if}
 
@@ -264,7 +274,6 @@
 					</div>
 				{/each}
 			</div>
-
 			<OtPbtn bind:error bind:isSuccess bind:buttonMsg />
 		</div>
 	</div>
